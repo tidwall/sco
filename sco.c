@@ -1495,7 +1495,17 @@ static int sco_compare(struct sco *a, struct sco *b) {
     return a->id < b->id ? -1: a->id > b->id;
 }
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
+AAT_DEF(static, sco_aat, struct sco)
 AAT_IMPL(sco_aat, struct sco, left, right, level, sco_compare)
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 struct sco_list {
     struct sco_link head;
