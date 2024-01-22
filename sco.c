@@ -11,6 +11,8 @@
 #include "sco.h"
 #else
 #define SCO_EXTERN static
+#include <stddef.h>
+#include <stdint.h>
 struct sco_desc {
     void *stack;
     size_t stack_size;
