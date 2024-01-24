@@ -12,6 +12,7 @@ void co_child_entry(void *udata) {
 
 void co_root_entry(void *udata) {
     assert(*(int*)udata == 99999999);
+    assert(*(int*)sco_udata() == 99999999);
     assert(sco_info_running() == 1);
     for (int i = 0; i < NCHILDREN; i++) {
         assert(started == 1+i);

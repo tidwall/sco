@@ -1730,6 +1730,11 @@ void sco_attach(int64_t id) {
 }
 
 SCO_EXTERN
+void *sco_udata(void) {
+    return sco_cur ? sco_cur->udata : NULL;
+}
+
+SCO_EXTERN
 size_t sco_info_scheduled(void) {
     return sco_nyielders;
 }

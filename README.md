@@ -68,6 +68,9 @@ void sco_attach(int64_t id);
 // This operation should be called from a coroutine, otherwise it does nothing.
 void sco_exit(void);
 
+// Returns the user data of the currently running coroutine.
+void *sco_udata(void);
+
 // General information and statistics
 size_t sco_info_scheduled(void);
 size_t sco_info_running(void);
