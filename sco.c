@@ -1712,7 +1712,6 @@ void sco_detach(int64_t id) {
         sco_ndetached++;
         sco_unlock();
     }
-    
 }
 
 SCO_EXTERN
