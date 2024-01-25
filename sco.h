@@ -1,3 +1,9 @@
+// https://github.com/tidwall/sco
+//
+// Copyright 2023 Joshua J Baker. All rights reserved.
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
+
 #ifndef SCO_H
 #define SCO_H
 

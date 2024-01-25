@@ -1,3 +1,5 @@
+// https://github.com/tidwall/sco
+//
 // Copyright 2023 Joshua J Baker. All rights reserved.
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -20,6 +22,7 @@ struct sco_desc {
     void (*cleanup)(void *stack, size_t stack_size, void *udata);
     void *udata;
 };
+#define SCO_MINSTACKSIZE 131072
 #endif
 
 #ifndef SCO_EXTERN
