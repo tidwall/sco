@@ -285,11 +285,64 @@ void test_sco_exit(void) {
     assert(exitvals[5] == -2);
 }
 
+struct order_ctx {
+    char a[10];
+    int i;
+};
+
+
+void co_yield1(void *udata) {
+    assert(udata);
+    char *a = ((struct order_ctx*)udata)->a;
+    int *i = &((struct order_ctx*)udata)->i;
+    a[(*i)++] = 'B';
+    sco_yield();
+    a[(*i)++] = 'D';
+}
+
+void co_yield2(void *udata) {
+    assert(udata);
+    char *a = ((struct order_ctx*)udata)->a;
+    int *i = &((struct order_ctx*)udata)->i;
+    a[(*i)++] = 'E';
+    sco_yield();
+    a[(*i)++] = 'G';
+}
+
+void co_yield(void *udata) {
+    assert(udata);
+    char *a = ((struct order_ctx*)udata)->a;
+    int *i = &((struct order_ctx*)udata)->i;
+    a[(*i)++] = 'A';
+    quick_start(co_yield1, co_cleanup, udata);
+    a[(*i)++] = 'C';
+    quick_start(co_yield2, co_cleanup, udata);
+    a[(*i)++] = 'F';
+    sco_yield();
+    a[(*i)++] = 'H';
+}
+
+
+void test_sco_order(void) {
+    // Tests the scheduling order.
+    struct order_ctx ctx = { 0 };
+    char *a = ctx.a;
+    int *i = &ctx.i;
+    quick_start(co_yield, co_cleanup, &ctx);
+    a[(*i)++] = '\0';
+    char exp[] = "ABCDEFGH";
+    if (strcmp(a, exp) != 0) { 
+        printf("expected '%s' got '%s'\n", exp, a);
+        abort();
+    }
+}
+
 int main(int argc, char **argv) {
     do_test(test_sco_start);
     do_test(test_sco_sleep);
     do_test(test_sco_pause);
     do_test(test_sco_exit);
+    do_test(test_sco_order);
 #ifndef __EMSCRIPTEN__
     do_test(test_sco_detach);
 #endif

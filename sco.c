@@ -1642,6 +1642,13 @@ static void sco_entry(void *udata) {
     co->udata = udata;
     co->prev = co;
     co->next = co;
+    if (sco_cur) {
+        // Reschedule the coroutine that started this one
+        sco_list_push_back(&sco_yielders, co);
+        sco_list_push_back(&sco_yielders, sco_cur);
+        sco_nyielders += 2;
+        sco_switch(false, false);
+    }
     sco_cur = co;
     if (sco_user_entry) {
         sco_user_entry(udata);
@@ -1661,11 +1668,10 @@ void sco_exit(void) {
 SCO_EXTERN
 void sco_start(struct sco_desc *desc) {
     sco_init();
-    if (sco_cur) {
-        // Reschedule the current coroutine
-        sco_list_push_back(&sco_yielders, sco_cur);
-        sco_nyielders++;
-    }
+    // if (sco_cur) {
+    //     sco_list_push_back(&sco_yielders, sco_cur);
+    //     sco_nyielders++;
+    // }
     struct llco_desc llco_desc = {
         .entry = sco_entry,
         .cleanup = desc->cleanup,
