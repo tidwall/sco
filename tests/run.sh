@@ -20,7 +20,9 @@ trap finish EXIT
 # Use address sanitizer if possible
 if [[ "$1" != "bench" ]]; then
     CFLAGS="-O0 -g3 -Wall -Wextra -fstrict-aliasing $CFLAGS"
-    if [[ ("$CC" == "" || "$CC" == "clang") && "`which clang`" != "" ]]; then
+    if [[ "$VALGRIND" != "1" && ("$CC" == "" || "$CC" == "clang") && \
+          "`which clang`" != "" ]]; \
+    then
         CC=clang
         CFLAGS="$CFLAGS -fno-omit-frame-pointer"
         CFLAGS="$CFLAGS -fprofile-instr-generate"
@@ -51,21 +53,20 @@ else
     CFLAGS=${CFLAGS:-"-O3"}
 fi
 CFLAGS="$CFLAGS -DSCO_TEST_PRIVATE_FUNCTIONS -DTEST_DEBUG"
+if [[ "$VALGRIND" == "1" ]]; then
+    CFLAGS="$CFLAGS -DLLCO_VALGRIND"
+fi
+
 CC=${CC:-cc}
 echo "CC: $CC"
 echo "CFLAGS: $CFLAGS"
 $CC --version
-
 if [[ "$1" == "bench" ]]; then
     echo "BENCHMARKING..."
     echo $CC $CFLAGS ../sco.c bench.c
     $CC $CFLAGS ../sco.c bench.c
     ./a.out $@
 else
-    # echo "For benchmarks: 'run.sh bench'"
-    # if [[ "$RACE" != "1" ]]; then
-    #     echo "For data race check: 'RACE=1 run.sh'"
-    # fi
     echo "TESTING..."
     for f in *; do 
         if [[ "$f" != test_*.c ]]; then continue; fi 
@@ -85,6 +86,8 @@ else
             MallocNanoZone=0 LLVM_PROFILE_FILE="$f.profraw" ./$f.test $@
         elif [[ "$CC" == "emcc" ]]; then
             node ./$f.test $@
+        elif [[ "$VALGRIND" == "1" ]]; then
+            valgrind ./$f.test $@
         else
             ./$f.test $@
         fi
