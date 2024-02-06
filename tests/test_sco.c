@@ -337,6 +337,10 @@ void test_sco_order(void) {
     }
 }
 
+void test_sco_unwind(void) {
+    sco_unwind(0);
+}
+
 int main(int argc, char **argv) {
     do_test(test_sco_start);
     do_test(test_sco_sleep);
@@ -346,6 +350,7 @@ int main(int argc, char **argv) {
 #ifndef __EMSCRIPTEN__
     do_test(test_sco_detach);
 #endif
+    do_test(test_sco_unwind);
     do_test(test_sco_various);
     return 0;
 }

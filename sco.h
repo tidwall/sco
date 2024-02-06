@@ -78,4 +78,17 @@ size_t sco_info_paused(void);
 size_t sco_info_detached(void);
 const char *sco_info_method(void);
 
+// Coroutine stack unwinding
+struct sco_symbol {
+    void *cfa;            // Canonical Frame Address
+    void *ip;             // Instruction Pointer
+    const char *fname;    // Pathname of shared object
+    void *fbase;          // Base address of shared object
+    const char *sname;    // Name of nearest symbol
+    void *saddr;          // Address of nearest symbol
+};
+
+// Unwinds the stack and returns the number of symbols
+int sco_unwind(bool (*func)(struct sco_symbol *));
+
 #endif // SCO_H
