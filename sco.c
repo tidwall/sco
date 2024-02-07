@@ -1208,14 +1208,14 @@ static _Unwind_Reason_Code llco_func(struct _Unwind_Context *uwc, void *ptr) {
     if (!cur) {
         if (ctx->nsymbols > 1) {
             ctx->nsymbols_actual++;
-            if (!ctx->func(&sym, ctx->udata)) {
+            if (ctx->func && !ctx->func(&sym, ctx->udata)) {
                 return _URC_END_OF_STACK;
             }
         }
     } else {
         if (ctx->nsymbols > 2) {
             ctx->nsymbols_actual++;
-            if (!ctx->func(&ctx->last, ctx->udata)) {
+            if (ctx->func && !ctx->func(&ctx->last, ctx->udata)) {
                 return _URC_END_OF_STACK;
             }
         }
@@ -1226,12 +1226,9 @@ static _Unwind_Reason_Code llco_func(struct _Unwind_Context *uwc, void *ptr) {
 
 LLCO_EXTERN
 int llco_unwind(bool(*func)(struct llco_symbol *sym, void *udata), void *udata){
-    if (func) {
-        struct llco_unwind_context ctx = { .func = func, .udata = udata };
-        _Unwind_Backtrace(llco_func, &ctx);
-        return ctx.nsymbols_actual;
-    }
-    return 0;
+    struct llco_unwind_context ctx = { .func = func, .udata = udata };
+    _Unwind_Backtrace(llco_func, &ctx);
+    return ctx.nsymbols_actual;
 }
 
 #else
@@ -1934,9 +1931,37 @@ const char *sco_info_method(void) {
     return llco_method(0);
 }
 
+struct sco_unwind_context {
+    int nsymbols;
+    int nsymbols_actual;
+    void *udata;
+    bool (*func)(struct sco_symbol*, void*);
+};
+
+static bool sco_unwind_step(struct llco_symbol *llco_sym, void *udata) {
+    struct sco_unwind_context *ctx = udata;
+    struct sco_symbol sym = {
+        .cfa = llco_sym->cfa,
+        .fbase = llco_sym->fbase,
+        .fname = llco_sym->fname,
+        .ip = llco_sym->ip,
+        .saddr = llco_sym->saddr,
+        .sname = llco_sym->sname,
+    };
+    if (ctx->nsymbols > 0) {
+        ctx->nsymbols_actual++;
+        if (ctx->func && !ctx->func(&sym, ctx->udata)) {
+            return false;
+        }
+    }
+    ctx->nsymbols++;
+    return true;
+}
 
 // Unwinds the stack and returns the number of symbols
 SCO_EXTERN
-int sco_unwind(bool (*func)(struct sco_symbol *sym, void *udata), void *udata) {
-    return llco_unwind((bool(*)(struct llco_symbol*,void*))func, udata);
+int sco_unwind(bool(*func)(struct sco_symbol *sym, void *udata), void *udata) {
+    struct sco_unwind_context ctx = { .func = func, .udata = udata };
+    llco_unwind(sco_unwind_step, &ctx);
+    return ctx.nsymbols_actual;
 }
