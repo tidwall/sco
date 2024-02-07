@@ -337,8 +337,15 @@ void test_sco_order(void) {
     }
 }
 
+bool symbol(struct sco_symbol *sym, void *udata) {
+    assert(udata && *(int*)udata == 10);
+    assert(sym);
+    return true;
+}
+
 void test_sco_unwind(void) {
-    sco_unwind(0, 0);
+    int x = 10;
+    sco_unwind(symbol, &x);
 }
 
 int main(int argc, char **argv) {
