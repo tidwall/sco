@@ -89,6 +89,6 @@ struct sco_symbol {
 };
 
 // Unwinds the stack and returns the number of symbols
-int sco_unwind(bool (*func)(struct sco_symbol *));
+int sco_unwind(bool (*func)(struct sco_symbol *sym, void *udata), void *udata);
 
 #endif // SCO_H

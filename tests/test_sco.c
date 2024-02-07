@@ -338,7 +338,7 @@ void test_sco_order(void) {
 }
 
 void test_sco_unwind(void) {
-    sco_unwind(0);
+    sco_unwind(0, 0);
 }
 
 int main(int argc, char **argv) {
