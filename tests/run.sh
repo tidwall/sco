@@ -45,9 +45,6 @@ if [[ "$1" != "bench" ]]; then
             WITHCOV="1"
         fi
     fi
-    if [[ "$CC" == "emcc" ]]; then
-        CFLAGS="$CFLAGS -sASYNCIFY -sALLOW_MEMORY_GROWTH"
-    fi
     CFLAGS=${CFLAGS:-"-O0 -g3 -Wall -Wextra -fstrict-aliasing"}
 else
     CFLAGS=${CFLAGS:-"-O3"}
@@ -57,6 +54,7 @@ if [[ "$VALGRIND" == "1" ]]; then
     CFLAGS="$CFLAGS -DLLCO_VALGRIND"
 fi
 if [[ "$CC" == "emcc" ]]; then
+    CFLAGS="$CFLAGS -sASYNCIFY -sALLOW_MEMORY_GROWTH"
     CFLAGS="$CFLAGS -Wno-limited-postlink-optimizations"
 fi
 
