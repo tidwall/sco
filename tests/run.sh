@@ -56,6 +56,9 @@ CFLAGS="$CFLAGS -DSCO_TEST_PRIVATE_FUNCTIONS -DTEST_DEBUG"
 if [[ "$VALGRIND" == "1" ]]; then
     CFLAGS="$CFLAGS -DLLCO_VALGRIND"
 fi
+if [[ "$CC" == "emcc" ]]; then
+    CFLAGS="$CFLAGS -Wno-limited-postlink-optimizations"
+fi
 
 CC=${CC:-cc}
 echo "CC: $CC"

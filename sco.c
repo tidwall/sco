@@ -1250,7 +1250,7 @@ int llco_unwind(bool(*func)(struct llco_symbol *sym, void *udata), void *udata){
 
 LLCO_EXTERN
 int llco_unwind(bool(*func)(struct llco_symbol *sym, void *udata), void *udata){
-    (void)func;
+    (void)func; (void)udata;
     /* Unsupported */
     return 0;
 }
