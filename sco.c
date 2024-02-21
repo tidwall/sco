@@ -1155,7 +1155,7 @@ const char *llco_method(void *caps) {
     ;
 }
 
-#if defined(__GNUC__) && !defined(__EMSCRIPTEN__)
+#if defined(__GNUC__) && !defined(__EMSCRIPTEN__) && !defined(_WIN32)
 
 #include <unwind.h>
 #include <string.h>
