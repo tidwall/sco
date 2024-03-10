@@ -270,6 +270,8 @@ void co_one(void *udata) {
 
 
 void test_sco_exit(void) {
+    memset(exitvals, 0, sizeof(exitvals));
+    nexitvals = 0;
     quick_start(co_one, co_cleanup, 0);
     exitvals[nexitvals++] = -1;
     while (sco_active()) {
