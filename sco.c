@@ -1676,6 +1676,57 @@ AAT_IMPL(sco_aat, struct sco, left, right, level, sco_compare)
 #pragma GCC diagnostic pop
 #endif
 
+// https://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html
+// hash u64 using mix13
+static uint64_t sco_mix13(uint64_t key) {
+    key ^= (key >> 30);
+    key *= UINT64_C(0xbf58476d1ce4e5b9);
+    key ^= (key >> 27);
+    key *= UINT64_C(0x94d049bb133111eb);
+    key ^= (key >> 31);
+    return key;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// sco_map - A hashmap-style structure that stores sco using multiple
+// binary search trees (aa-tree) in hashed shards. This allows for the map to
+// grow evenly, without allocations, and performing much faster than using a
+// single BST.
+////////////////////////////////////////////////////////////////////////////////
+
+#define NSHARDS 32
+
+struct sco_map {
+    struct sco *roots[NSHARDS];
+    int count;
+};
+
+static struct sco *sco_map_insert(struct sco_map *map, struct sco *sco) {
+    static struct sco *prev;
+    uint64_t hash = sco_mix13(sco->id);
+    prev = sco_aat_insert(&map->roots[hash & (NSHARDS-1)], sco);
+    if (!prev) {
+        map->count++;
+    }
+    return prev;
+}
+
+// static struct sco *sco_map_search(struct sco_map *map, struct sco *key){
+//     uint64_t hash = sco_mix13(key->id);
+//     return sco_aat_search(&map->roots[hash & (NSHARDS-1)], key);
+// }
+
+static struct sco *sco_map_delete(struct sco_map *map, struct sco *key){
+    static struct sco *prev;
+    uint64_t hash = sco_mix13(key->id);
+    prev = sco_aat_delete(&map->roots[hash & (NSHARDS-1)], key);
+    if (prev) {
+        map->count--;
+    }
+    return prev;
+}
+
 struct sco_list {
     struct sco_link head;
     struct sco_link tail;
@@ -1691,14 +1742,14 @@ static __thread struct sco_list sco_runners = { 0 };
 static __thread size_t sco_nyielders = 0;
 static __thread struct sco_list sco_yielders = { 0 };
 static __thread struct sco *sco_cur = NULL;
-static __thread struct sco *sco_paused = NULL;
+static __thread struct sco_map sco_paused = { 0 };
 static __thread size_t sco_npaused = 0;
 static __thread bool sco_exit_to_main_requested = false;
 static __thread void(*sco_user_entry)(void *udata);
 
 static atomic_int_fast64_t sco_next_id = 0;
 static atomic_bool sco_locker = 0;
-static struct sco *sco_detached = NULL;
+static struct sco_map sco_detached = { 0 };
 static size_t sco_ndetached = 0;
 
 static void sco_lock(void) {
@@ -1849,7 +1900,7 @@ void sco_yield(void) {
 SCO_EXTERN
 void sco_pause(void) {
     if (sco_cur) {
-        sco_aat_insert(&sco_paused, sco_cur);
+        sco_map_insert(&sco_paused, sco_cur);
         sco_npaused++;
         sco_switch(false, false);
     }
@@ -1863,7 +1914,7 @@ void sco_resume(int64_t id) {
         sco_switch(true, false);
     } else {
         // Resuming from coroutine
-        struct sco *co = sco_aat_delete(&sco_paused, &(struct sco){ .id = id });
+        struct sco *co = sco_map_delete(&sco_paused, &(struct sco){ .id = id });
         if (co) {
             sco_npaused--;
             co->prev = co;
@@ -1877,11 +1928,11 @@ void sco_resume(int64_t id) {
 
 SCO_EXTERN
 void sco_detach(int64_t id) {
-    struct sco *co = sco_aat_delete(&sco_paused, &(struct sco){ .id = id });
+    struct sco *co = sco_map_delete(&sco_paused, &(struct sco){ .id = id });
     if (co) {
         sco_npaused--;
         sco_lock();
-        sco_aat_insert(&sco_detached, co);
+        sco_map_insert(&sco_detached, co);
         sco_ndetached++;
         sco_unlock();
     }
@@ -1890,13 +1941,13 @@ void sco_detach(int64_t id) {
 SCO_EXTERN
 void sco_attach(int64_t id) {
     sco_lock();
-    struct sco *co = sco_aat_delete(&sco_detached, &(struct sco){ .id = id });
+    struct sco *co = sco_map_delete(&sco_detached, &(struct sco){ .id = id });
     if (co) {
         sco_ndetached--;
     }
     sco_unlock();
     if (co) {
-        sco_aat_insert(&sco_paused, co);
+        sco_map_insert(&sco_paused, co);
         sco_npaused++;
     }
 }
