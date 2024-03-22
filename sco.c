@@ -1712,11 +1712,6 @@ static struct sco *sco_map_insert(struct sco_map *map, struct sco *sco) {
     return prev;
 }
 
-// static struct sco *sco_map_search(struct sco_map *map, struct sco *key){
-//     uint64_t hash = sco_mix13(key->id);
-//     return sco_aat_search(&map->roots[hash & (NSHARDS-1)], key);
-// }
-
 static struct sco *sco_map_delete(struct sco_map *map, struct sco *key){
     static struct sco *prev;
     uint64_t hash = sco_mix13(key->id);
@@ -1868,10 +1863,6 @@ void sco_exit(void) {
 SCO_EXTERN
 void sco_start(struct sco_desc *desc) {
     sco_init();
-    // if (sco_cur) {
-    //     sco_list_push_back(&sco_yielders, sco_cur);
-    //     sco_nyielders++;
-    // }
     struct llco_desc llco_desc = {
         .entry = sco_entry,
         .cleanup = desc->cleanup,
