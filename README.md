@@ -7,9 +7,6 @@ The main purpose of this project is to power
 coroutine-based networking programs, but it works just as well for any program
 that needs a fast and predictable scheduler.
 
-This library uses [llco](https://github.com/tidwall/llco) for performing the
-actual coroutine context switching.
-
 ## Features
 
 - Fair and deterministic scheduler
