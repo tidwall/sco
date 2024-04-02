@@ -4,7 +4,11 @@ Coroutine scheduler for C.
 
 The main purpose of this project is to power
 [neco](https://github.com/tidwall/neco), which is a framework for building 
-coroutine-based networking programs.
+coroutine-based networking programs, but it works well for any program that 
+needs a fast and predictable scheduler.
+
+This library uses [llco](https://github.com/tidwall/llco) for performing the
+actual coroutine context switching.
 
 ## Features
 
