@@ -1716,10 +1716,11 @@ struct sco_map {
     int count;
 };
 
+#define scp_map_getaat(sco) \
+    (&map->roots[sco_mix13((sco)->id) & (SCO_NSHARDS-1)])
+
 static struct sco *sco_map_insert(struct sco_map *map, struct sco *sco) {
-    static struct sco *prev;
-    uint64_t hash = sco_mix13(sco->id);
-    prev = sco_aat_insert(&map->roots[hash & (SCO_NSHARDS-1)], sco);
+    struct sco *prev = sco_aat_insert(scp_map_getaat(sco), sco);
     if (!prev) {
         map->count++;
     }
@@ -1727,9 +1728,7 @@ static struct sco *sco_map_insert(struct sco_map *map, struct sco *sco) {
 }
 
 static struct sco *sco_map_delete(struct sco_map *map, struct sco *key){
-    static struct sco *prev;
-    uint64_t hash = sco_mix13(key->id);
-    prev = sco_aat_delete(&map->roots[hash & (SCO_NSHARDS-1)], key);
+    struct sco *prev = sco_aat_delete(scp_map_getaat(key), key);
     if (prev) {
         map->count--;
     }
