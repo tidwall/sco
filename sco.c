@@ -1703,23 +1703,23 @@ static uint64_t sco_mix13(uint64_t key) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// sco_map - A hashmap-style structure that stores sco using multiple
+// sco_map - A hashmap-style structure that stores sco types using multiple
 // binary search trees (aa-tree) in hashed shards. This allows for the map to
 // grow evenly, without allocations, and performing much faster than using a
 // single BST.
 ////////////////////////////////////////////////////////////////////////////////
 
-#define NSHARDS 32
+#define SCO_NSHARDS 32
 
 struct sco_map {
-    struct sco *roots[NSHARDS];
+    struct sco *roots[SCO_NSHARDS];
     int count;
 };
 
 static struct sco *sco_map_insert(struct sco_map *map, struct sco *sco) {
     static struct sco *prev;
     uint64_t hash = sco_mix13(sco->id);
-    prev = sco_aat_insert(&map->roots[hash & (NSHARDS-1)], sco);
+    prev = sco_aat_insert(&map->roots[hash & (SCO_NSHARDS-1)], sco);
     if (!prev) {
         map->count++;
     }
@@ -1729,7 +1729,7 @@ static struct sco *sco_map_insert(struct sco_map *map, struct sco *sco) {
 static struct sco *sco_map_delete(struct sco_map *map, struct sco *key){
     static struct sco *prev;
     uint64_t hash = sco_mix13(key->id);
-    prev = sco_aat_delete(&map->roots[hash & (NSHARDS-1)], key);
+    prev = sco_aat_delete(&map->roots[hash & (SCO_NSHARDS-1)], key);
     if (prev) {
         map->count--;
     }
