@@ -1709,7 +1709,9 @@ static uint64_t sco_mix13(uint64_t key) {
 // single BST.
 ////////////////////////////////////////////////////////////////////////////////
 
-#define SCO_NSHARDS 32
+#ifndef SCO_NSHARDS
+#define SCO_NSHARDS 512
+#endif
 
 struct sco_map {
     struct sco *roots[SCO_NSHARDS];
