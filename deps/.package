@@ -1,2 +1,5 @@
 import github.com/tidwall/aatree v0.1.0
-import github.com/tidwall/llco v0.1.0
+import github.com/tidwall/llco v0.1.1
+sum 6b48e1849cc1bad9e5180966505f14d36f95757e  aat.h
+sum 14499fcd004daf92895a8d1f8fbbd7cd5b4d641a  llco.c
+sum eea2b20604efddd2b75090306b9bb63c047b47c2  llco.h
