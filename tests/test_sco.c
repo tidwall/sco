@@ -299,14 +299,14 @@ void co_yield1(void *udata) {
     int *i = &((struct order_ctx*)udata)->i;
     a[(*i)++] = 'B';
     sco_yield();
-    a[(*i)++] = 'D';
+    a[(*i)++] = 'F';
 }
 
 void co_yield2(void *udata) {
     assert(udata);
     char *a = ((struct order_ctx*)udata)->a;
     int *i = &((struct order_ctx*)udata)->i;
-    a[(*i)++] = 'E';
+    a[(*i)++] = 'D';
     sco_yield();
     a[(*i)++] = 'G';
 }
@@ -319,7 +319,7 @@ void co_yield(void *udata) {
     quick_start(co_yield1, co_cleanup, udata);
     a[(*i)++] = 'C';
     quick_start(co_yield2, co_cleanup, udata);
-    a[(*i)++] = 'F';
+    a[(*i)++] = 'E';
     sco_yield();
     a[(*i)++] = 'H';
 }
